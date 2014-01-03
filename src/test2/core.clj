@@ -3,9 +3,8 @@
       [compojure.handler :only [site]]
       [compojure.core :only [defroutes GET POST DELETE ANY context]]
       org.httpkit.server)
-	(:require [cheshire.core :refer :all])
-	(:require [clojure.java.jdbc :as j])
-	(:require clojure.stacktrace))
+	(:use [cheshire.core :only [generate-string parse-string]])
+	(:require [clojure.java.jdbc :as j]))
 
 
 ;;define and connect mysql;;
