@@ -1,14 +1,3 @@
-# test2
+# A simple clojure I made while learning clojure.
 
-A Clojure library designed to ... well, that part is up to you.
-
-## Usage
-
-FIXME
-
-## License
-
-Copyright © 2014 FIXME
-
-Distributed under the Eclipse Public License either version 1.0 or (at
-your option) any later version.
+The code is far from good, but I'll be improving it, as I learn more.
