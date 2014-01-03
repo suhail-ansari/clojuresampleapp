@@ -4,7 +4,11 @@
       [compojure.core :only [defroutes GET POST DELETE ANY context]]
       org.httpkit.server)
 	(:use [cheshire.core :only [generate-string parse-string]])
-	(:require [clojure.java.jdbc :as j]))
+	(:require [clojure.java.jdbc :as j])
+	(:gen-class))
+
+
+(def not-contains? (complement contains?))
 
 
 ;;define and connect mysql;;
@@ -16,54 +20,42 @@
 ;;write data :data  to database :db
 (defn write-data [data]
 	(println data)
-	(if (empty? data)
-		false
-		(do (try (j/insert! mysql-db (keyword (:db data)) (:data data)) true 
-			(catch Exception e false)))))
+	(if (or (empty? data) (not-contains? data :db) (not-contains? data :data));;(complement (and (contains? data :db) (contains? data :data))))
+		[102 "empty/invalid parameters"]
+		(do (try (j/insert! mysql-db (keyword (:db data)) (:data data)) [200 "OK"]
+			(catch Exception e [101 "error"])))))
 
 
 ;;get + jsonp request
 (defn get-handler [{params :params}]
-	(println params)
-	(if (write-data (apply dissoc params [:_ :callback]))
+	;;(println params)
+	(let [result (write-data (apply dissoc params [:_ :callback]))]
 		(do (if (contains? params :callback)
 				(do {:status 200
-					:headers {"Content-Type" "application/json"}
-					:body (str (:callback params) "(" (generate-string {:status 200 :message "OK"}) ");")
+					:headers {"Content-Type" "application/json" "Connection" "close"}
+					:body (str (:callback params) "(" (generate-string {:status (nth result 0) :message (nth result 1)}) ");")
 				})
 				(do {:status 200
 					:headers {"Content-Type" "application/json"}
-					:body (str (generate-string {:status 200 :message "OK"}))
-				})))
-		(do (if (contains? params :callback)
-				(do {:status 200
-					:headers {"Content-Type" "application/json"}
-					:body (str (:callback params) "(" (generate-string {:status 101 :message "error"}) ");")
-				})
-				(do {:status 200
-					:headers {"Content-Type" "application/json"}
-					:body (str (generate-string {:status 101 :message "error"}))
+					:body (str (generate-string {:status (nth result 0) :message (nth result 1)}))
 				})))))
 
 ;;post request
 (defn post-handler [{params :params}]
-	(println params)
-	(if (write-data (apply dissoc params [:_ :callback]))
+	(let [result (write-data (apply dissoc params [:_ :callback]))]
 		(do {:status 200
-					:headers {"Content-Type" "application/json"}
-					:body (str (generate-string {:status 200 :message "OK"}))
-				})
-		(do {:status 200
-					:headers {"Content-Type" "application/json"}
-					:body (str (generate-string {:status 101 :message "error"}))
+					;;:headers {"Content-Type" "application/json"}
+					:headers {"Content-Type" "application/json" "Connection" "close"}
+					:body (str (generate-string {:status (nth result 0) :message (nth result 1)}))
 				})))
 
 ;;404 error handler
 (defn not-found-handler [params]
-	(println params)
+	;;(println params)
 	{:status 404
-	      :headers {"Content-Type" "application/json"}
+	      :headers {"Content-Type" "application/json" "Connection" "close"}
 	      :body  (str (generate-string {:status 404 :message "not found"}))})
+
 
 (defroutes main-routes
 	(GET "/" {params :params} get-handler)
