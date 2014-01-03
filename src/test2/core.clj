@@ -20,7 +20,7 @@
 ;;write data :data  to database :db
 (defn write-data [data]
 	(println data)
-	(if (or (empty? data) (not-contains? data :db) (not-contains? data :data));;(complement (and (contains? data :db) (contains? data :data))))
+	(if (or (empty? data) (not-contains? data :db) (not-contains? data :data))
 		[102 "empty/invalid parameters"]
 		(do (try (j/insert! mysql-db (keyword (:db data)) (:data data)) [200 "OK"]
 			(catch Exception e [101 "error"])))))
@@ -28,7 +28,6 @@
 
 ;;get + jsonp request
 (defn get-handler [{params :params}]
-	;;(println params)
 	(let [result (write-data (apply dissoc params [:_ :callback]))]
 		(do (if (contains? params :callback)
 				(do {:status 200
@@ -44,14 +43,12 @@
 (defn post-handler [{params :params}]
 	(let [result (write-data (apply dissoc params [:_ :callback]))]
 		(do {:status 200
-					;;:headers {"Content-Type" "application/json"}
 					:headers {"Content-Type" "application/json" "Connection" "close"}
 					:body (str (generate-string {:status (nth result 0) :message (nth result 1)}))
 				})))
 
 ;;404 error handler
 (defn not-found-handler [params]
-	;;(println params)
 	{:status 404
 	      :headers {"Content-Type" "application/json" "Connection" "close"}
 	      :body  (str (generate-string {:status 404 :message "not found"}))})
