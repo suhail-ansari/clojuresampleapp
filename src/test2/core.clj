@@ -31,9 +31,9 @@
 	(let [result (write-data (-> request :params (dissoc [:_ :callback]))) callback (-> request :params :callback )]
 		{:status 200
 			:headers {"Content-Type" "application/json" "Connection" "close"}
-			:body (if (not-nil? callback) 
+			:body (if (nil? callback) 
+					(do (str (generate-string {:status (first result) :message (second result)}))))
 					(do (str callback "(" (generate-string {:status (first result) :message (second result)}) ");"))
-				  	(do (str (generate-string {:status (first result) :message (second result)}))))
 			}))
 
 ;;post request
