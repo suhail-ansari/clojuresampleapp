@@ -10,7 +10,6 @@
 
 
 (def not-contains? (complement contains?))
-(def not-nil? (complement nil?))
 
 ;;define and connect mysql;;
 (def mysql-db {:subprotocol "mysql"
@@ -32,8 +31,8 @@
 		{:status 200
 			:headers {"Content-Type" "application/json" "Connection" "close"}
 			:body (if (nil? callback) 
-					(do (str (generate-string {:status (first result) :message (second result)}))))
-					(do (str callback "(" (generate-string {:status (first result) :message (second result)}) ");"))
+					(do (str (generate-string {:status (first result) :message (second result)})))
+					(do (str callback "(" (generate-string {:status (first result) :message (second result)}) ");")))
 			}))
 
 ;;post request
